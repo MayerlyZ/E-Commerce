@@ -57,7 +57,7 @@ const customers: Customer[] = [
   },
 ];
 
-export default function CustomersTable(): JSX.Element {
+export default function CustomersTable(): React.JSX.Element {
   return (
     <div className="w-full overflow-hidden rounded-lg bg-white shadow-md">
       
