@@ -90,3 +90,61 @@
     color: var(--olas-light);
     transform: translateY(-4px) scale(1.05);
 }
+
+.successText {
+    color: #4CAF50;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Image Upload Styles */
+.fileInput {
+    display: none;
+}
+
+.imageUploadContainer {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.imageUploadLabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border: 2px dashed var(--olas-dark);
+    border-radius: 8px;
+    background-color: rgba(48, 79, 64, 0.05);
+    cursor: pointer;
+    transition: all 300ms ease;
+    font-weight: 500;
+    color: var(--olas-dark);
+    text-align: center;
+}
+
+.imageUploadLabel:hover {
+    border-color: #C85A54;
+    background-color: rgba(200, 90, 84, 0.1);
+    transform: translateY(-2px);
+}
+
+.fileInput:disabled + .imageUploadLabel {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.imagePreviewContainer {
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.imagePreview {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+    display: block;
+}

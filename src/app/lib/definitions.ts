@@ -4,4 +4,5 @@ export type User = {
   name: string;
   email: string;
   password: string; // Hashed password
+  role?: string; // admin or customer
 };

@@ -2,6 +2,8 @@
  
 import { signIn } from '../../../auth';
 import { AuthError } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { auth } from '../../../auth';
  
  
 export async function authenticate(
@@ -20,5 +22,15 @@ export async function authenticate(
       }
     }
     throw error;
+  }
+  
+  // Get the session to check the role
+  const session = await auth();
+  
+  // Redirect based on role
+  if ((session?.user as any)?.role === 'admin') {
+    redirect('/admin');
+  } else {
+    redirect('/');
   }
 }

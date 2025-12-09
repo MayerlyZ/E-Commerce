@@ -12,6 +12,7 @@ interface MongooseLeanUser {
   _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
+  role?: string;
   password?: string; 
 }
 
@@ -31,15 +32,14 @@ async function getUser(email: string): Promise<User | undefined> {
             return undefined;
         }
     
-        const finalUser: User = {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          password: user.password,
-        };
-    return finalUser;
-
-  } catch (error) {
+    const finalUser: User = {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      role: user.role || 'customer',
+    };
+    return finalUser;  } catch (error) {
     console.error('Failed to fetch user:', error);
     throw new Error('Failed to fetch user.');
   }

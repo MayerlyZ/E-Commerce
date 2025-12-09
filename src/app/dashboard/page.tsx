@@ -2,81 +2,251 @@
 "use client";
 
 import { useState } from 'react';
+import styles from './dashboard.module.css';
+
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  category: string;
+  image: string;
+  stock: string;
+  sku: string;
+}
 
 export default function DashboardPage() {
-  const [email, setEmail] = useState('');
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<ProductFormData>({
+    name: '',
+    description: '',
+    price: '',
+    category: 'productos',
+    image: '',
+    stock: '',
+    sku: '',
+  });
 
-  const handleContactClick = async () => {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setLoading(true);
-    setStatusMessage(null);
+    setMessage(null);
 
     try {
-      const response = await fetch('/api/sendEmail', {
+      // Validar campos requeridos
+      if (!formData.name || !formData.description || !formData.price || !formData.stock) {
+        throw new Error('Por favor, completa todos los campos requeridos');
+      }
+
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        image: formData.image || null,
+        stock: parseInt(formData.stock),
+        sku: formData.sku || null,
+      };
+
+      const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: email,
-          asunto: "El toque final que mereces ✨",
-          mensajeHtml: `
-            <div style="font-family:Inter,sans-serif;color:#592202;background:#F2E7DC;padding:24px;border-radius:24px;">
-              <h2 style="margin-top:0; font-family:'Playfair Display', serif; font-style: italic; color:#592202; font-size:28px;">Olas ✨ </h2>
-              <p style="line-height:1.6;font-size:16px;margin:16px 0;">
-                  Bienvenid@ <strong>${email}</strong> Para conocer mas, inicia sesion. 
-              </p>
-            </div>
-          `,
-        }),
+        body: JSON.stringify(productData),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Algo salió mal al enviar el correo.');
+        throw new Error(data.error || 'Error al crear el producto');
       }
 
-      setStatusMessage(data.res);
-      setEmail(''); 
+      setMessage({
+        type: 'success',
+        text: '✅ Producto creado exitosamente',
+      });
+
+      // Limpiar formulario
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        category: 'productos',
+        image: '',
+        stock: '',
+        sku: '',
+      });
     } catch (error: any) {
-      setStatusMessage(error.message);
+      setMessage({
+        type: 'error',
+        text: `❌ ${error.message}`,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-4xl font-bold mb-6 text-olas-dark">Dashboard</h1>
-      <p className="text-lg text-gray-700 mb-8">Bienvenido al panel de administración de Olas Accesory</p>
-      
-      <div className="bg-white rounded-lg shadow p-8 max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-olas-dark">Contacto</h2>
-        <div className="flex flex-col gap-4">
-          <input
-            type="email"
-            placeholder="Tu email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-olas-dark focus:outline-none focus:ring-2 focus:ring-olas-dark text-black"
-          />
-          <button 
-            onClick={handleContactClick}
-            disabled={loading || !email}
-            className="bg-olas-dark hover:bg-olas-light text-white font-semibold py-2 rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Enviando...' : 'Contactarme'}
-          </button>
-          {statusMessage && (
-            <p className={`text-sm ${statusMessage.includes('Error') || statusMessage.includes('error') ? 'text-red-600' : 'text-green-600'}`}>
-              {statusMessage}
-            </p>
-          )}
-        </div>
+    <main className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Dashboard - Crear Producto</h1>
+        <p className={styles.subtitle}>Agrega nuevos productos a tu tienda</p>
       </div>
-    </div>
+
+      <div className={styles.formContainer}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="name" className={styles.label}>
+              Nombre del Producto *
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Ej: Pulsera de perlas"
+              className={styles.input}
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="description" className={styles.label}>
+              Descripción *
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Describe el producto"
+              className={styles.textarea}
+              rows={4}
+              required
+            />
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label htmlFor="price" className={styles.label}>
+                Precio ($) *
+              </label>
+              <input
+                type="number"
+                id="price"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                className={styles.input}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="stock" className={styles.label}>
+                Stock *
+              </label>
+              <input
+                type="number"
+                id="stock"
+                name="stock"
+                value={formData.stock}
+                onChange={handleChange}
+                placeholder="0"
+                min="0"
+                className={styles.input}
+                required
+              />
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label htmlFor="category" className={styles.label}>
+                Categoría *
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className={styles.select}
+                required
+              >
+                <option value="productos">Productos</option>
+                <option value="material">Material</option>
+                <option value="descuentos">Descuentos</option>
+                <option value="novedades">Novedades</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="sku" className={styles.label}>
+                SKU (Opcional)
+              </label>
+              <input
+                type="text"
+                id="sku"
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                placeholder="Código de producto"
+                className={styles.input}
+              />
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="image" className={styles.label}>
+              URL de Imagen (Opcional)
+            </label>
+            <input
+              type="url"
+              id="image"
+              name="image"
+              value={formData.image}
+              onChange={handleChange}
+              placeholder="https://ejemplo.com/imagen.jpg"
+              className={styles.input}
+            />
+          </div>
+
+          {message && (
+            <div
+              className={`${styles.message} ${
+                message.type === 'success' ? styles.successMessage : styles.errorMessage
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={styles.submitBtn}
+          >
+            {loading ? 'Creando producto...' : '✨ Crear Producto'}
+          </button>
+        </form>
+      </div>
+    </main>
   );
 }
 
